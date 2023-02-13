@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:logger/logger.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -18,9 +20,22 @@ class _HomePageState extends State<HomePage> {
   Future download({required String url}) async{
     var status = await Permission.storage.request();
     if(status.isGranted){
-      final baseStorage = await getExternalStorageDirectory();
+     // final baseStorage = await getExternalStorageDirectory();
+     // Logger().wtf('baseStorage?.path  ${baseStorage?.path}');
+     final directory = await getExternalStorageDirectory();
+      String newPath = '';
+      List<String>? folders = directory?.path.split('/');
+      for (int i = 1; i < folders!.length; i++) {
+        if (folders[i] != 'Android') {
+          newPath += '/${folders[i]}';
+        } else {
+          break;
+        }
+      }
+      newPath = '$newPath/';
+      Logger().wtf('newPath  $newPath');
       await FlutterDownloader.enqueue(url: url,
-          savedDir: baseStorage?.path ?? '/storage/emulated/0/Download',
+          savedDir:newPath,
           showNotification: true,
           openFileFromNotification: true
       );
@@ -65,7 +80,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: (){
-          download(url: 'https://unsplash.com/photos/2nBqfQhsMgQ');
+          download(url: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/GatesofArctic.jpg');
         },
         child: const Icon(Icons.download),
       ),
